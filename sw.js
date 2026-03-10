@@ -1,22 +1,9 @@
-const CACHE_NAME = 'stockcontrol-v2';
+const CACHE_NAME = 'stockcontrol-v3';
 
-// Install: cache the app shell
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll([
-        self.registration.scope,
-        self.registration.scope + 'index.html',
-        self.registration.scope + 'manifest.json',
-        self.registration.scope + 'icon-192.png',
-        self.registration.scope + 'icon-512.png',
-      ]).catch(() => {});
-    })
-  );
   self.skipWaiting();
 });
 
-// Activate: clean old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -26,7 +13,6 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: network first, fallback to cache
 self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
@@ -39,7 +25,6 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Push notifications
 self.addEventListener('push', e => {
   const data = e.data ? e.data.json() : {};
   e.waitUntil(self.registration.showNotification(data.title || 'StockControl', {
@@ -52,7 +37,6 @@ self.addEventListener('push', e => {
   }));
 });
 
-// Notification click
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(
