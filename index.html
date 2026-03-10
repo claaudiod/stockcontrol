@@ -863,3 +863,8 @@ function dismissInstall(){document.getElementById('install-banner').classList.re
 if(localStorage.getItem('sc_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-btn').textContent='🌙';}
 renderTable();
 renderHistory();
+window.addEventListener('resize', ()=>{ renderTable(); });
+window.addEventListener('load',()=>setTimeout(startFirebase,600));
+</script>
+</body>
+</html>
