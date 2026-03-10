@@ -157,7 +157,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .func-cat-filter{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem;}
 .cat-filter-btn{padding:.3rem .7rem;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--font-mono);font-size:.7rem;cursor:pointer;transition:all .2s;}
 .cat-filter-btn.active,.cat-filter-btn:hover{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,.08);}
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem;}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem;}
 .product-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;cursor:pointer;transition:all .2s;}
 .product-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 4px 16px rgba(168,85,247,.2);}
 .product-card.out-of-stock{opacity:.5;cursor:not-allowed;}
@@ -216,16 +216,14 @@ tr:hover td{background:rgba(255,255,255,.02);}
   table{table-layout:fixed;width:100%;}
   th:nth-child(2),td:nth-child(2),
   th:nth-child(4),td:nth-child(4),
-  th:nth-child(5),td:nth-child(5){display:none;}
-  th:nth-child(1),td:nth-child(1){width:45%;}
-  th:nth-child(3),td:nth-child(3){width:25%;}
-  th:nth-child(6),td:nth-child(6){width:30%;}
-  .product-name{font-size:.8rem;}
-  .product-sku{display:none;}
-  .row-actions{flex-direction:column;gap:.2rem;}
-  .action-btn{padding:.3rem .4rem;font-size:.75rem;}
+  th:nth-child(5),td:nth-child(5),
+  th:nth-child(6),td:nth-child(6){display:none;}
+  th:nth-child(1),td:nth-child(1){width:60%;}
+  th:nth-child(3),td:nth-child(3){width:40%;}
+  .product-name{font-size:.82rem;}
+  .product-sku{font-size:.65rem;}
   .func-layout{grid-template-columns:1fr;}
-  .nav-tab{padding:.4rem .6rem;font-size:.7rem;}
+  .nav-tab{padding:.4rem .5rem;font-size:.68rem;}
 }
 </style>
 </head>
@@ -275,7 +273,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <select id="filter-cat" onchange="renderTable()"><option value="">Todas as categorias</option></select>
     <button class="btn btn-primary" onclick="openModal(null)">+ Adicionar Produto</button>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" id="admin-table-wrap">
     <table><thead><tr><th>Produto</th><th>Categoria</th><th>Estoque</th><th>Nível</th><th>Status</th><th>Ações</th></tr></thead><tbody id="table-body"></tbody></table>
     <div id="empty-state" class="empty-state" style="display:none"><div class="empty-icon">📦</div><p>Nenhum produto encontrado.</p></div>
   </div>
@@ -507,7 +505,8 @@ function renderTable(){
       const pct=p.max?Math.min(p.qty/p.max*100,100):Math.min(p.qty/Math.max(p.min*3,1)*100,100);
       const bc=s==='danger'?'var(--danger)':s==='warn'?'var(--warn)':'var(--success)';
       const cc=getCatColor(p.cat||'Geral');
-      return `<tr>
+      const sc=s==='danger'?'var(--danger)':s==='warn'?'var(--warn)':'var(--success)';
+      return `<tr style="border-left:3px solid ${sc}">
         <td><div class="product-name">${p.name}</div><div class="product-sku">${p.sku||'—'} · ${p.unit||'un'}</div></td>
         <td><span class="cat-dot" style="--cat-color:${cc}">${p.cat||'—'}</span></td>
         <td><span style="font-family:var(--font-mono);font-weight:700;font-size:1rem">${p.qty}</span> <span style="font-family:var(--font-mono);font-size:.7rem;color:var(--muted)">${p.unit||'un'}</span></td>
@@ -842,3 +841,25 @@ if('serviceWorker'in navigator){
       window._swReg=reg;
       if(Notification.permission==='default'&&!localStorage.getItem('sc_notif_asked'))
         setTimeout(()=>document.getElementById('notif-banner').classList.add('show'),4000);
+    }).catch(e=>console.warn('SW:',e));
+  });
+}
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredInstall=e;
+  if(!localStorage.getItem('sc_install_dismissed'))
+    setTimeout(()=>document.getElementById('install-banner').classList.add('show'),6000);
+});
+function installApp(){if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.then(()=>deferredInstall=null);}document.getElementById('install-banner').classList.remove('show');localStorage.setItem('sc_install_dismissed','1');}
+function dismissInstall(){document.getElementById('install-banner').classList.remove('show');localStorage.setItem('sc_install_dismissed','1');}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+if(localStorage.getItem('sc_theme')==='light'){document.body.classList.add('light');document.getElementById('theme-btn').textContent='🌙';}
+renderTable();
+renderHistory();
+window.addEventListener('resize', ()=>{ renderTable(); });
+window.addEventListener('load',()=>setTimeout(startFirebase,600));
+</script>
+</body>
+</html>
