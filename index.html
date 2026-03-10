@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>StockControl</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -20,9 +20,9 @@ body.light{--bg:#d6dce8;--surface:#e4e9f2;--surface2:#c8d0e0;--border:#a8b4c8;--
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font-display);background:var(--bg);color:var(--text);min-height:100vh;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:32px 32px;}
 /* LOGIN */
-.login-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1rem;}
-.login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem 1.5rem;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.5);}
-.login-logo{font-size:2.2rem;font-weight:800;letter-spacing:-1px;margin-bottom:.3rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:normal;word-break:break-word;}
+.login-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem 1.5rem;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.5);box-sizing:border-box;margin:auto;}
+.login-logo{font-size:1.6rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.3rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
 .login-sub{font-family:var(--font-mono);font-size:.75rem;color:var(--muted);margin-bottom:2rem;}
 .login-field{margin-bottom:1rem;}
 .login-field label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
@@ -205,7 +205,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .pwa-btn-ok{background:var(--purple);color:#fff;}
 .pwa-btn-ok.accent{background:var(--accent);color:#000;}
 .pwa-btn-no{background:transparent;border:1px solid var(--border);color:var(--muted);}
-@media(max-width:600px){header{padding:.6rem 1rem;}.hdr-stats{display:none;}main{padding:1rem .7rem;}.summary-grid{grid-template-columns:repeat(2,1fr);}th:nth-child(4),td:nth-child(4),th:nth-child(2),td:nth-child(2){display:none;}}
+@media(max-width:600px){header{padding:.6rem 1rem;}.hdr-stats{display:none;}main{padding:1rem .7rem;}.summary-grid{grid-template-columns:repeat(2,1fr);}th:nth-child(4),td:nth-child(4),th:nth-child(2),td:nth-child(2){display:none;}.login-logo{font-size:1.5rem;letter-spacing:-.3px;}.login-box{padding:1.5rem 1rem;}}
 </style>
 </head>
 <body>
