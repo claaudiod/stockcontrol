@@ -22,7 +22,7 @@ body{font-family:var(--font-display);background:var(--bg);color:var(--text);min-
 /* LOGIN */
 .login-screen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;}
 .login-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem 1.5rem;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.5);box-sizing:border-box;margin:auto;}
-.login-logo{font-size:1.6rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.3rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
+.login-logo{font-size:2.1rem;font-weight:800;letter-spacing:-.5px;margin-bottom:.3rem;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
 .login-sub{font-family:var(--font-mono);font-size:.75rem;color:var(--muted);margin-bottom:2rem;}
 .login-field{margin-bottom:1rem;}
 .login-field label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
@@ -274,9 +274,12 @@ tr:hover td{background:rgba(255,255,255,.02);}
   <div class="alerts-section" id="alerts-section"></div>
   <div class="filters">
     <div class="search-box"><input type="text" id="search" placeholder="Buscar produto ou SKU..." oninput="renderTable()"></div>
-    <select id="filter-status" onchange="renderTable()"><option value="">Todos os status</option><option value="ok">Normal</option><option value="warn">Atenção</option><option value="danger">Crítico</option></select>
+    <select id="filter-status" onchange="renderTable()"><option value="">Todos os status</option><option value="ok">Normal</option><option value="warn">Atenção</option><option value="danger">Crítico (para zerar)</option><option value="zero">Zerado</option></select>
     <select id="filter-cat" onchange="renderTable()"><option value="">Todas as categorias</option></select>
     <button class="btn btn-primary" onclick="openModal(null)">+ Adicionar Produto</button>
+  </div>
+  <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-bottom:.8rem;flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="printList()" style="border-color:var(--muted)">🖨️ Imprimir</button>
   </div>
   <div class="table-wrap" id="admin-table-wrap">
     <table><thead><tr><th>Produto</th><th>Categoria</th><th>Estoque</th><th>Nível</th><th>Status</th><th>Ações</th></tr></thead><tbody id="table-body"></tbody></table>
@@ -498,7 +501,8 @@ function renderTable(){
   const fc=(document.getElementById('filter-cat')||{value:''}).value;
   let list=products.filter(p=>{
     const m=p.name.toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q);
-    return m&&(!fs||getStatus(p)===fs)&&(!fc||p.cat===fc);
+    const statusMatch = !fs || (fs==='zero' ? p.qty===0 : fs==='danger' ? (getStatus(p)==='danger' && p.qty>0) : getStatus(p)===fs);
+    return m&&statusMatch&&(!fc||p.cat===fc);
   });
   const tbody=document.getElementById('table-body');
   const empty=document.getElementById('empty-state');
@@ -856,6 +860,47 @@ window.addEventListener('beforeinstallprompt',e=>{
 });
 function installApp(){if(deferredInstall){deferredInstall.prompt();deferredInstall.userChoice.then(()=>deferredInstall=null);}document.getElementById('install-banner').classList.remove('show');localStorage.setItem('sc_install_dismissed','1');}
 function dismissInstall(){document.getElementById('install-banner').classList.remove('show');localStorage.setItem('sc_install_dismissed','1');}
+
+// ══════════════════════════════════════
+// PRINT & EXPORT
+// ══════════════════════════════════════
+function getFilteredProducts() {
+  const q  = (document.getElementById('search')||{value:''}).value.toLowerCase();
+  const fs = (document.getElementById('filter-status')||{value:''}).value;
+  const fc = (document.getElementById('filter-cat')||{value:''}).value;
+  return products.filter(p => {
+    const m = p.name.toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q);
+    const statusMatch = !fs || (fs==='zero' ? p.qty===0 : fs==='danger' ? (getStatus(p)==='danger' && p.qty>0) : getStatus(p)===fs);
+    return m && statusMatch && (!fc || p.cat===fc);
+  });
+}
+
+function printList() {
+  const list = getFilteredProducts();
+  const statusLabel = s => s==='danger'?'Crítico':s==='warn'?'Atenção':'Normal';
+  const rows = list.map(p => `
+    <tr style="border-bottom:1px solid #ddd">
+      <td style="padding:6px 10px">${p.name}</td>
+      <td style="padding:6px 10px">${p.sku||'—'}</td>
+      <td style="padding:6px 10px">${p.cat||'—'}</td>
+      <td style="padding:6px 10px;text-align:center">${p.qty} ${p.unit||'un'}</td>
+      <td style="padding:6px 10px;text-align:center">${p.min}</td>
+      <td style="padding:6px 10px;text-align:center">${p.max||'—'}</td>
+      <td style="padding:6px 10px;text-align:center;color:${getStatus(p)==='danger'?'#cc0000':getStatus(p)==='warn'?'#cc8800':'#006600'}">${p.qty===0?'Zerado':statusLabel(getStatus(p))}</td>
+    </tr>`).join('');
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Estoque — StockControl</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px}h2{margin-bottom:4px}p{color:#666;font-size:13px;margin-bottom:16px}table{width:100%;border-collapse:collapse}th{background:#1a1f2e;color:#fff;padding:8px 10px;text-align:left}tr:nth-child(even){background:#f5f5f5}@media print{button{display:none}}</style>
+    </head><body>
+    <h2>📦 Relatório de Estoque</h2>
+    <p>Gerado em: ${new Date().toLocaleString('pt-BR')} — ${list.length} produto(s)</p>
+    <button onclick="window.print()" style="margin-bottom:16px;padding:8px 16px;background:#0099bb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Imprimir</button>
+    <table><thead><tr><th>Produto</th><th>SKU</th><th>Categoria</th><th>Estoque</th><th>Mínimo</th><th>Máximo</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    </body></html>`);
+  win.document.close();
+}
+
 
 // ══════════════════════════════════════
 // INIT
